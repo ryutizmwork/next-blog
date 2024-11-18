@@ -1,0 +1,86 @@
+# version: "3"
+
+# services:
+#   db:
+#     image: mysql:8.0
+#     platform: linux/amd64
+#     volumes:
+#       - db_data:/var/lib/mysql
+#     restart: unless-stopped
+#     environment:
+#       MYSQL_ROOT_PASSWORD: wordpress
+#       MYSQL_DATABASE: next-blog
+#       MYSQL_USER: wordpress
+#       MYSQL_PASSWORD: wordpress
+
+#   wordpress:
+#     depends_on:
+#       - db
+#     platform: linux/amd64
+#     image: wordpress:latest
+#     container_name: wp-next
+#     ports:
+#       - "8000:80"
+#     restart: unless-stopped
+#     environment:
+#       WORDPRESS_DB_HOST: db:3306
+#       WORDPRESS_DB_USER: wordpress
+#       WORDPRESS_DB_PASSWORD: wordpress
+#       WORDPRESS_DB_NAME: wordpress
+
+#   phpmyadmin:
+#     image: phpmyadmin/phpmyadmin
+#     platform: linux/amd64
+#     depends_on:
+#       - db
+#     environment:
+#       - PMA_ARBITRARY=1
+#       - PMA_HOSTS=db
+#       - PMA_USER=wordpress
+#       - PMA_PASSWORD=wordpress
+#     ports:
+#       - "8001:80"
+#     volumes:
+#       - ./docker/phpmyadmin/sessions:/sessions
+# volumes:
+#   db_data: {}
+
+services:
+  db:
+    image: mysql:8.0
+    platform: linux/arm64  # Apple M1/M2チップの場合はarm64を指定
+    container_name: mysql8
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: password  # rootユーザのパスワード
+      MYSQL_DATABASE: db_local  # WordPress用データベース名
+      MYSQL_USER: wp_user  # WordPress用データベース接続ユーザ名
+      MYSQL_PASSWORD: password  # WordPress用データベース接続パスワード
+
+  wordpress:
+    image: wordpress:latest
+    platform: linux/arm64  # Apple M1/M2チップの場合はarm64を指定
+    container_name: wordpress
+    restart: always
+    depends_on:
+      - db
+    ports:
+      - 10090:80
+    environment:
+      WORDPRESS_DB_HOST: db:3306  # データベースサーバ名：ポート番号
+      WORDPRESS_DB_USER: wp_user  # WordPress用データベース接続ユーザ名
+      WORDPRESS_DB_PASSWORD: password  # WordPress用データベース接続パスワード
+      WORDPRESS_DB_NAME: db_local  # WordPress用データベース名
+      WORDPRESS_DEBUG: 1  # デバッグモードON
+    volumes:
+      - ./docker:/var/www/html
+
+  # phpmyadmin:
+  #   image: phpmyadmin/phpmyadmin:latest
+  #   platform: linux/arm64  # Apple M1/M2チップの場合はarm64を指定
+  #   container_name: phpmyadmin_ingrid
+  #   restart: always
+  #   depends_on:
+  #     - db
+  #   ports:
+  #     - 10099:80
